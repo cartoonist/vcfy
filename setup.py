@@ -45,6 +45,7 @@ _TAR_URL = _VCS_URL + "/tarball/" + _RELEASE_INFO['__version__']
 setup(
     name=_PYPINAME,
     packages=_PACKAGES,
+    package_data=_RELEASE_INFO['__package_data__'],
     version=_RELEASE_INFO['__version__'],
     description=_RELEASE_INFO['__description__'],
     long_description=LONG_DESCRIPTION,

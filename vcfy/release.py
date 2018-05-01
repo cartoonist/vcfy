@@ -41,6 +41,9 @@ __license__ = 'MIT'
 __version__ = '0.0.1-dev'
 __status__ = DS_PREALPHA
 
+# Package data
+__package_data__ = {__title__: ['resources/templates/template.vcf']}
+
 # PyPI-related information
 __keywords__ = ['vcf', 'genome', 'genomics', 'variation', 'DNA', 'sequence',
                 'ngs']

@@ -1,0 +1,9 @@
+##fileformat=VCFv4.2
+##fileDate={date}
+##source=vcfy {version}
+##reference={reference}
+##contig={contigs}
+##phasing=none
+##commandline="{cmd}"
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+.	0	.	.	.	.	.	.
