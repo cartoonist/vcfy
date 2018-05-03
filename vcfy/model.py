@@ -31,7 +31,7 @@ def rnd_sv(locus, seq):
     Return:
         A tuple indicating the REF and ALT alleles.
     """
-    ref = seq[locus].upper()
+    ref = seq[locus-1].upper()
     if ref not in util.BASES:
         raise RuntimeError("invalid base character")
 

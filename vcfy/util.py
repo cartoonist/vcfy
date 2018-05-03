@@ -47,7 +47,7 @@ def make_template(ref, region, **params):
                             ',length=' + str(len(region.seq)) + '>')
     opts = ['vcfy']
     opts.append('-n ' + str(params['num']))
-    opts.append('-r "' + region.id + '"')
+    opts.append("-r '" + region.id + "'")
     opts.append('-l ' + str(params['low']) if params['low'] else '')
     opts.append('-h ' + str(params['high']) if params['high'] else '')
     wildcards['cmd'] = ' '.join(o for o in opts if o)
