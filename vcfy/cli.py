@@ -17,7 +17,8 @@ from . import model
 
 @click.command()
 @click.argument('reference', type=click.File('r'))
-@click.argument('output', type=click.File('w'))
+@click.option('-o', '--output', default="-", type=click.File('w'),
+              help="Write to this file instead of standard output.")
 @click.option('-n', '--num', type=int, required=True,
               help="Number of variants to be simulated.")
 @click.option('-r', '--region', type=str, default=None,
