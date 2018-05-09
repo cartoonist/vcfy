@@ -11,7 +11,9 @@
     :license: MIT, see LICENSE for more details.
 """
 
+from __future__ import print_function
 import os
+import sys
 
 from numpy import random, arange
 import vcf
@@ -33,7 +35,7 @@ def rnd_sv(locus, seq):
     """
     ref = seq[locus-1].upper()
     if ref not in util.BASES:
-        raise RuntimeError("invalid base character")
+        print("WARNING: invalid base character. Skipped.", file=sys.stderr)
 
     return ref, random.choice([b for b in util.BASES if b != ref])
 
