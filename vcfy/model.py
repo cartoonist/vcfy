@@ -11,7 +11,9 @@
     :license: MIT, see LICENSE for more details.
 """
 
+from __future__ import print_function
 import os
+import sys
 
 from numpy import random, arange
 import vcf
@@ -33,14 +35,12 @@ def rnd_sv(locus, seq):
     """
     ref = seq[locus-1].upper()
     if ref not in util.BASES:
-        raise RuntimeError("invalid base character")
+        print("WARNING: invalid base character. Skipped.", file=sys.stderr)
 
-    alts = [b for b in util.BASES if b != ref]
-    idx = random.choice(len(alts), 1)[0]
-    return ref, alts[idx]
+    return ref, random.choice([b for b in util.BASES if b != ref])
 
 
-def simulate(region, num, low=None, high=None, pmf=None):
+def simulate(region, mrate, low=None, high=None):
     """Simulate variants for the given region in the one-based range
     [low, high) using the probability model defined by mass function `pmf`.
 
@@ -48,18 +48,14 @@ def simulate(region, num, low=None, high=None, pmf=None):
         region : Bio.SeqRecord.SeqRecord
             The BioPython's `SeqRecord`-like object of the region containing the
             region ID and its sequence.
-        num : int
-            The number of variants to be simulated.
+        mrate : float
+            Base mutation rate.
         low : int, optional
             The lower bound of the range in which the variants are simulated. It
             is assumed to be 1, if not provided.
         high : int, optional
             If provided, it is one above the upper bound of the range; otherwise
             it is set to the length of the region sequence.
-        pmf : 1-D array-like, optional
-            The probabilities associated with each entry in [low, high). If not
-            given the sample assumes a uniform distribution over all entries in
-            [low, high).
     Return:
         A dictionary containing values for these VCF fields: POS, ID, REF, ALT,
         QUAL, and FILTER.
@@ -67,15 +63,15 @@ def simulate(region, num, low=None, high=None, pmf=None):
     low = 1 if low is None else max(1, low)
     high = len(region.seq) if high is None else min(high, len(region.seq))
 
-    loci = random.choice(arange(low, high), num, replace=False, p=pmf)
-    for locus in sorted(loci):
-        ref, alt = rnd_sv(locus, region.seq)
-        yield dict(POS=locus,
-                   ID=util.VCF_MISSING_VALUE,
-                   REF=ref,
-                   ALT=alt,
-                   QUAL=util.VCF_MISSING_VALUE,
-                   FILTER=util.VCF_MISSING_VALUE)
+    for locus in arange(low, high):
+        if random.choice([True, False], p=[mrate, 1-mrate]):
+            ref, alt = rnd_sv(locus, region.seq)
+            yield dict(POS=locus,
+                       ID=util.VCF_MISSING_VALUE,
+                       REF=ref,
+                       ALT=alt,
+                       QUAL=util.VCF_MISSING_VALUE,
+                       FILTER=util.VCF_MISSING_VALUE)
 
 
 def generate_vcf(ref, vcf_out, region_id=None, **sim_params):

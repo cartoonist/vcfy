@@ -19,8 +19,8 @@ from . import model
 @click.argument('reference', type=click.File('r'))
 @click.option('-o', '--output', default="-", type=click.File('w'),
               help="Write to this file instead of standard output.")
-@click.option('-n', '--num', type=int, required=True,
-              help="Number of variants to be simulated.")
+@click.option('-m', '--mutation-rate', type=float, required=True,
+              help="Base mutation rate.")
 @click.option('-r', '--region', type=str, default=None,
               help="Region ID (default=first region in the reference)")
 @click.option('-l', '--low', type=int, default=None,
@@ -36,7 +36,8 @@ def cli(**kwargs):
     For more information, consult with the README file.
     """
     model.generate_vcf(
-        kwargs.pop('reference'),
-        kwargs.pop('output'),
-        kwargs.pop('region'),
+        ref=kwargs.pop('reference'),
+        vcf_out=kwargs.pop('output'),
+        region_id=kwargs.pop('region'),
+        mrate=kwargs.pop('mutation_rate'),
         **kwargs)
