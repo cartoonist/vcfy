@@ -35,9 +35,7 @@ def rnd_sv(locus, seq):
     if ref not in util.BASES:
         raise RuntimeError("invalid base character")
 
-    alts = [b for b in util.BASES if b != ref]
-    idx = random.choice(len(alts), 1)[0]
-    return ref, alts[idx]
+    return ref, random.choice([b for b in util.BASES if b != ref])
 
 
 def simulate(region, num, low=None, high=None, pmf=None):
