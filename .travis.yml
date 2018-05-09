@@ -5,14 +5,9 @@ python:
   - "3.5"
   - "3.6"
 
-# install pandoc
-before_install:
-  - wget "https://github.com/jgm/pandoc/releases/download/1.18/pandoc-1.18-1-amd64.deb" && sudo dpkg -i pandoc-1.18-1-amd64.deb
-
 # command to install dependencies
 install: "pip install tox-travis"
 
 # command to run tests
 script:
-  - /usr/bin/make README.rst
   - tox
