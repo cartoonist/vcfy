@@ -38,15 +38,14 @@ __email__ = 'ali.ghaffaari@mpi-inf.mpg.de'
 __license__ = 'MIT'
 
 # Release
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 __status__ = DS_PREALPHA
 
 # Package data
 __package_data__ = {__title__: ['resources/templates/template.vcf']}
 
 # PyPI-related information
-__keywords__ = ['vcf', 'genome', 'genomics', 'variation', 'DNA', 'sequence',
-                'ngs']
+__keywords__ = 'vcf genome genomics variation DNA sequence ngs'
 __classifiers__ = [
     # Development status
     DS_STRING[__status__],
@@ -58,7 +57,11 @@ __classifiers__ = [
     'License :: OSI Approved :: MIT License',
 
     # Supported Python versions.
+    'Programming Language :: Python :: 2',
+    'Programming Language :: Python :: 2.7',
+    'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6',
 
     # Intended Audience and Topic
     'Intended Audience :: Science/Research',
@@ -72,8 +75,9 @@ __requires__ = [
 ]
 __tests_require__ = []
 __extras_require__ = {
-    'test': ['nose'],
+    'test': ['nose>=1.0', 'coverage'],
 }
+__setup_requires__ = ['nose>=1.0', 'coverage']
 __entry_points__ = '''
 [console_scripts]
 vcfy=vcfy.cli:cli

@@ -1,25 +1,23 @@
-PIP=pip
-TEST=nosetests
-PKG_NAME=vcfy
-TESTREPO=pypitest
-MAINREPO=pypi
+TESTPYPI=testpypi
 
 # Specifying phony targets
-.PHONY: init test dist-test dist
-
-init:
-	${PIP} install -r requirements.txt
+.PHONY: test build package dist-test dist dist-clean
 
 test:
-	${TEST}
+	python setup.py nosetests
 
-README.rst: README.md
-	pandoc -o $@ $<
+build:
+	python setup.py build
 
-dist-test: README.rst
-	python setup.py register -r ${TESTREPO}
-	python setup.py sdist upload -r ${TESTREPO}
+package:
+	python setup.py sdist
+	python setup.py bdist_wheel
 
-dist: README.rst
-	python setup.py register -r ${MAINREPO}
-	python setup.py sdist upload -r ${MAINREPO}
+dist: package
+	twine upload dist/*
+
+dist-test: package
+	twine upload --repository ${TESTPYPI} dist/*
+
+dist-clean:
+	rm -rf dist/ build/ *.egg-info

@@ -46,7 +46,7 @@ def make_template(ref, region, **params):
     wildcards['contigs'] = ('<ID=' + region.id +
                             ',length=' + str(len(region.seq)) + '>')
     opts = ['vcfy']
-    opts.append('-n ' + str(params['num']))
+    opts.append('-m ' + str(params['mrate']))
     opts.append("-r '" + region.id + "'")
     opts.append('-l ' + str(params['low']) if params['low'] else '')
     opts.append('-h ' + str(params['high']) if params['high'] else '')
