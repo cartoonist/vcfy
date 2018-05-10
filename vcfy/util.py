@@ -10,7 +10,9 @@
     :license: MIT, see LICENSE for more details.
 """
 
+from __future__ import print_function
 import os
+import sys
 import copy
 import datetime
 import pkg_resources as pkg_res
@@ -23,6 +25,12 @@ from . import release
 BASES = ['A', 'C', 'G', 'T']
 VCF_MISSING_VALUE = '.'
 VCF_TEMPLATE_PATH = 'resources/templates/template.vcf'
+
+
+def warn(msg):
+    """Print a warning message."""
+    print("[{pkg}] WARNING: {msg}.".format(pkg=release.__title__, msg=msg),
+          file=sys.stderr)
 
 
 def make_template(ref, region, **params):

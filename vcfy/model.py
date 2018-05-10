@@ -11,9 +11,7 @@
     :license: MIT, see LICENSE for more details.
 """
 
-from __future__ import print_function
 import os
-import sys
 
 from numpy import random, arange
 import vcf
@@ -35,7 +33,7 @@ def rnd_sv(locus, seq):
     """
     ref = seq[locus-1].upper()
     if ref not in util.BASES:
-        print("WARNING: invalid base character. Skipped.", file=sys.stderr)
+        raise RuntimeError("invalid base character")
 
     return ref, random.choice([b for b in util.BASES if b != ref])
 
@@ -65,7 +63,11 @@ def simulate(region, mrate, low=None, high=None):
 
     for locus in arange(low, high):
         if random.choice([True, False], p=[mrate, 1-mrate]):
-            ref, alt = rnd_sv(locus, region.seq)
+            try:
+                ref, alt = rnd_sv(locus, region.seq)
+            except RuntimeError as err:
+                util.warn(err)
+                continue
             yield dict(POS=locus,
                        ID=util.VCF_MISSING_VALUE,
                        REF=ref,
