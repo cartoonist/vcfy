@@ -11,10 +11,6 @@
     :license: MIT, see LICENSE for more details.
 """
 
-from __future__ import print_function
-import os
-import sys
-
 from numpy import random, arange
 import vcf
 
@@ -35,7 +31,7 @@ def rnd_sv(locus, seq):
     """
     ref = seq[locus-1].upper()
     if ref not in util.BASES:
-        print("WARNING: invalid base character. Skipped.", file=sys.stderr)
+        raise RuntimeError("invalid base character")
 
     return ref, random.choice([b for b in util.BASES if b != ref])
 
@@ -61,11 +57,15 @@ def simulate(region, mrate, low=None, high=None):
         QUAL, and FILTER.
     """
     low = 1 if low is None else max(1, low)
-    high = len(region.seq) if high is None else min(high, len(region.seq))
+    high = len(region.seq) + 1 if high is None else min(high, len(region.seq)+1)
 
     for locus in arange(low, high):
         if random.choice([True, False], p=[mrate, 1-mrate]):
-            ref, alt = rnd_sv(locus, region.seq)
+            try:
+                ref, alt = rnd_sv(locus, region.seq)
+            except RuntimeError as err:
+                util.warn(err)
+                continue
             yield dict(POS=locus,
                        ID=util.VCF_MISSING_VALUE,
                        REF=ref,
@@ -93,8 +93,7 @@ def generate_vcf(ref, vcf_out, region_id=None, **sim_params):
     else:
         region = next(util.filter_regions(ref, include=[region_id]))
 
-    template_fpath = util.make_template(ref, region, **sim_params)
-    template = vcf.Reader(open(template_fpath, 'r'))
+    template = vcf.Reader(util.make_template(ref, region, **sim_params))
 
     if isinstance(vcf_out, str):
         writer = vcf.Writer(open(vcf_out, 'w'), template)
@@ -105,5 +104,3 @@ def generate_vcf(ref, vcf_out, region_id=None, **sim_params):
     for svar in simulate(region, **sim_params):
         record = util.update_record(tmpl_record, CHROM=region.id, **svar)
         writer.write_record(record)
-
-    os.remove(template_fpath)
