@@ -59,7 +59,7 @@ def simulate(region, mrate, low=None, high=None):
         QUAL, and FILTER.
     """
     low = 1 if low is None else max(1, low)
-    high = len(region.seq) if high is None else min(high, len(region.seq))
+    high = len(region.seq) + 1 if high is None else min(high, len(region.seq)+1)
 
     for locus in arange(low, high):
         if random.choice([True, False], p=[mrate, 1-mrate]):
