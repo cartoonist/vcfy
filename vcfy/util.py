@@ -15,6 +15,7 @@ import os
 import sys
 import copy
 import datetime
+import tempfile
 import pkg_resources as pkg_res
 
 from Bio import SeqIO
@@ -24,7 +25,7 @@ from . import release
 
 BASES = ['A', 'C', 'G', 'T']
 VCF_MISSING_VALUE = '.'
-VCF_TEMPLATE_PATH = 'resources/templates/template.vcf'
+VCF_TEMPLATE = 'resources/templates/template.vcf'
 
 
 def warn(msg):
@@ -59,11 +60,11 @@ def make_template(ref, region, **params):
     opts.append('-l ' + str(params['low']) if params['low'] else '')
     opts.append('-h ' + str(params['high']) if params['high'] else '')
     wildcards['cmd'] = ' '.join(o for o in opts if o)
-    tmpl = open(pkg_res.resource_filename(__name__, VCF_TEMPLATE_PATH), 'r')
-    new_tmpl = open('.template.vcf', 'w')
-    for line in tmpl:
-        new_tmpl.write(line.format(**wildcards))
-    return new_tmpl.name
+    template = tempfile.NamedTemporaryFile(mode='w+t')
+    for line in open(pkg_res.resource_filename(__name__, VCF_TEMPLATE), 'r'):
+        template.write(line.format(**wildcards))
+    template.seek(0)
+    return template
 
 
 def filter_regions(fasta_file, **kwargs):

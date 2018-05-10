@@ -11,8 +11,6 @@
     :license: MIT, see LICENSE for more details.
 """
 
-import os
-
 from numpy import random, arange
 import vcf
 
@@ -95,8 +93,7 @@ def generate_vcf(ref, vcf_out, region_id=None, **sim_params):
     else:
         region = next(util.filter_regions(ref, include=[region_id]))
 
-    template_fpath = util.make_template(ref, region, **sim_params)
-    template = vcf.Reader(open(template_fpath, 'r'))
+    template = vcf.Reader(util.make_template(ref, region, **sim_params))
 
     if isinstance(vcf_out, str):
         writer = vcf.Writer(open(vcf_out, 'w'), template)
@@ -107,5 +104,3 @@ def generate_vcf(ref, vcf_out, region_id=None, **sim_params):
     for svar in simulate(region, **sim_params):
         record = util.update_record(tmpl_record, CHROM=region.id, **svar)
         writer.write_record(record)
-
-    os.remove(template_fpath)
