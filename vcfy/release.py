@@ -71,6 +71,7 @@ __requires__ = [
     'PyVCF>=0.6.8',
     'biopython>=1.71',
     'numpy>=1.14.3',
+    'BitVector>=3.4.8',
     'click>=6.7',
 ]
 __tests_require__ = []
@@ -81,4 +82,5 @@ __setup_requires__ = ['nose>=1.0', 'coverage']
 __entry_points__ = '''
 [console_scripts]
 vcfy=vcfy.cli:cli
+ksnper=vcfy.ksnper:cli
 '''
