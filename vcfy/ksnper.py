@@ -113,6 +113,9 @@ def write_csv(output, vcf_file, ref_file, k, dialect='unix'):
               default='unix', show_default=True,
               help="Use this CSV dialect.")
 def cli(**kwargs):
+    """Report the number of SNPs in all k-mers. Specify the k and the VCF file,
+    it reports number of SNPS occurred in each k-mer.
+    """
     write_csv(kwargs.pop('output'),
               kwargs.pop('vcf'),
               kwargs.pop('reference'),
