@@ -10,6 +10,7 @@
     :license: MIT, see LICENSE for more details.
 """
 
+import sys
 import csv
 
 import click
@@ -108,13 +109,15 @@ def write_csv(output, vcf_file, ref_file, k, dialect='unix', compressed=None):
 
 
 @click.command()
-@click.argument('vcf', type=click.File('r'), default="-")
+@click.argument('vcf', type=str, default="-")
 @click.option('-o', '--output', type=click.File('w'), default="-",
               help="Write to this file instead of standard output.")
 @click.option('-r', '--reference', type=click.File('r'), default=None,
               help=("Reference genome FASTA file. It will be inferred from VCF "
                     "header, if not specified."))
 @click.option('-k', type=int, required=True, help="The value of k.")
+@click.option('-c', is_flag=True, default=None,
+              help="Set if the input VCF is compressed")
 @click.option('-d', '--dialect', type=click.Choice(csv.list_dialects()),
               default='unix', show_default=True,
               help="Use this CSV dialect.")
@@ -122,8 +125,10 @@ def cli(**kwargs):
     """Report the number of SNPs in all k-mers. Specify the k and the VCF file,
     it reports number of SNPS occurred in each k-mer.
     """
+    stdin_fsock = sys.stdin.buffer if kwargs['c'] else sys.stdin
     write_csv(kwargs.pop('output'),
-              kwargs.pop('vcf'),
+              kwargs.pop('vcf') if kwargs['vcf'] != '-' else stdin_fsock,
               kwargs.pop('reference'),
               kwargs.pop('k'),
-              kwargs.pop('dialect'))
+              kwargs.pop('dialect'),
+              kwargs.pop('c'))
