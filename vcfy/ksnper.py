@@ -71,7 +71,7 @@ def ksnpcounts(snpbv, k):
         yield kcount
 
 
-def write_csv(output, vcf_file, ref_file, k, dialect='unix'):
+def write_csv(output, vcf_file, ref_file, k, dialect='unix', compressed=None):
     """Write CSV file.
 
     Args:
@@ -86,6 +86,9 @@ def write_csv(output, vcf_file, ref_file, k, dialect='unix'):
             The length of the k-mer.
         dialect : str
             This string specifies the dialect of the output CSV file.
+        compressed : bool
+            Whether input VCF is compressed or not. It is determined by file
+            extension if it is not specified.
     """
     csv_writer = csv.DictWriter(output,
                                 fieldnames=['k', 'count'],
@@ -94,9 +97,9 @@ def write_csv(output, vcf_file, ref_file, k, dialect='unix'):
     csv_writer.writeheader()
 
     if isinstance(vcf_file, str):
-        vcf_reader = vcf.Reader(filename=vcf_file)
+        vcf_reader = vcf.Reader(filename=vcf_file, compressed=compressed)
     else:
-        vcf_reader = vcf.Reader(vcf_file)
+        vcf_reader = vcf.Reader(vcf_file, compressed=compressed)
     if ref_file is None:
         ref_file = open(vcf_reader.metadata['reference'], 'r')
     bv = compute_snpbv(vcf_reader, reflen(ref_file))
