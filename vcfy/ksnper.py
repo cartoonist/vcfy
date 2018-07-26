@@ -93,7 +93,10 @@ def write_csv(output, vcf_file, ref_file, k, dialect='unix'):
                                 quoting=csv.QUOTE_NONE)
     csv_writer.writeheader()
 
-    vcf_reader = vcf.Reader(vcf_file)
+    if isinstance(vcf_file, str):
+        vcf_reader = vcf.Reader(filename=vcf_file)
+    else:
+        vcf_reader = vcf.Reader(vcf_file)
     if ref_file is None:
         ref_file = open(vcf_reader.metadata['reference'], 'r')
     bv = compute_snpbv(vcf_reader, reflen(ref_file))
