@@ -10,6 +10,7 @@
     :license: MIT, see LICENSE for more details.
 """
 
+import sys
 import csv
 
 import click
@@ -71,7 +72,7 @@ def ksnpcounts(snpbv, k):
         yield kcount
 
 
-def write_csv(output, vcf_file, ref_file, k, dialect='unix'):
+def write_csv(output, vcf_file, ref_file, k, dialect='unix', compressed=None):
     """Write CSV file.
 
     Args:
@@ -86,6 +87,9 @@ def write_csv(output, vcf_file, ref_file, k, dialect='unix'):
             The length of the k-mer.
         dialect : str
             This string specifies the dialect of the output CSV file.
+        compressed : bool
+            Whether input VCF is compressed or not. It is determined by file
+            extension if it is not specified.
     """
     csv_writer = csv.DictWriter(output,
                                 fieldnames=['k', 'count'],
@@ -93,7 +97,10 @@ def write_csv(output, vcf_file, ref_file, k, dialect='unix'):
                                 quoting=csv.QUOTE_NONE)
     csv_writer.writeheader()
 
-    vcf_reader = vcf.Reader(vcf_file)
+    if isinstance(vcf_file, str):
+        vcf_reader = vcf.Reader(filename=vcf_file, compressed=compressed)
+    else:
+        vcf_reader = vcf.Reader(vcf_file, compressed=compressed)
     if ref_file is None:
         ref_file = open(vcf_reader.metadata['reference'], 'r')
     bv = compute_snpbv(vcf_reader, reflen(ref_file))
@@ -102,19 +109,26 @@ def write_csv(output, vcf_file, ref_file, k, dialect='unix'):
 
 
 @click.command()
-@click.argument('vcf', type=click.File('r'), default="-")
+@click.argument('vcf', type=str, default="-")
 @click.option('-o', '--output', type=click.File('w'), default="-",
               help="Write to this file instead of standard output.")
 @click.option('-r', '--reference', type=click.File('r'), default=None,
               help=("Reference genome FASTA file. It will be inferred from VCF "
                     "header, if not specified."))
 @click.option('-k', type=int, required=True, help="The value of k.")
+@click.option('-c', is_flag=True, default=None,
+              help="Set if the input VCF is compressed")
 @click.option('-d', '--dialect', type=click.Choice(csv.list_dialects()),
               default='unix', show_default=True,
               help="Use this CSV dialect.")
 def cli(**kwargs):
+    """Report the number of SNPs in all k-mers. Specify the k and the VCF file,
+    it reports number of SNPS occurred in each k-mer.
+    """
+    stdin_fsock = sys.stdin.buffer if kwargs['c'] else sys.stdin
     write_csv(kwargs.pop('output'),
-              kwargs.pop('vcf'),
+              kwargs.pop('vcf') if kwargs['vcf'] != '-' else stdin_fsock,
               kwargs.pop('reference'),
               kwargs.pop('k'),
-              kwargs.pop('dialect'))
+              kwargs.pop('dialect'),
+              kwargs.pop('c'))
