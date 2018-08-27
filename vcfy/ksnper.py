@@ -19,14 +19,23 @@ from Bio import SeqIO
 from BitVector import BitVector
 
 
-def reflen(ref_file):
+def reflen(ref_file, region=None):
     """Get the length of reference genome sequence length.
 
     Args:
         ref_file : file-like object or str
             The reference genome file or file path.
+        region : str
+            The region in the reference genome. If it is not provided, the first
+            region will be used.
     """
-    return len(next(SeqIO.parse(ref_file, 'fasta')).seq)
+    parser = SeqIO.parse(ref_file, 'fasta')
+    if region is None:
+        return len(next(parser).seq)
+    for r in parser:
+        if r.name == region:
+            return len(r.seq)
+    raise RuntimeError("region not found")
 
 
 def compute_snpbv(vcf_reader, length):
@@ -72,7 +81,8 @@ def ksnpcounts(snpbv, k):
         yield kcount
 
 
-def write_csv(output, vcf_file, ref_file, k, dialect='unix', compressed=None):
+def write_csv(output, vcf_file, ref_file, k, region=None, dialect='unix',
+              compressed=None):
     """Write CSV file.
 
     Args:
@@ -85,6 +95,8 @@ def write_csv(output, vcf_file, ref_file, k, dialect='unix', compressed=None):
             genome path will be inferred from VCF metadata (header).
         k : int
             The length of the k-mer.
+        region : str
+            The region in the reference genome.
         dialect : str
             This string specifies the dialect of the output CSV file.
         compressed : bool
@@ -103,7 +115,7 @@ def write_csv(output, vcf_file, ref_file, k, dialect='unix', compressed=None):
         vcf_reader = vcf.Reader(vcf_file, compressed=compressed)
     if ref_file is None:
         ref_file = open(vcf_reader.metadata['reference'], 'r')
-    bv = compute_snpbv(vcf_reader, reflen(ref_file))
+    bv = compute_snpbv(vcf_reader, reflen(ref_file, region))
     for count in ksnpcounts(bv, k):
         csv_writer.writerow(dict(k=k, count=count))
 
@@ -115,9 +127,11 @@ def write_csv(output, vcf_file, ref_file, k, dialect='unix', compressed=None):
 @click.option('-r', '--reference', type=click.File('r'), default=None,
               help=("Reference genome FASTA file. It will be inferred from VCF "
                     "header, if not specified."))
+@click.option('-R', '--region', type=str, default=None,
+              help="Use this region from reference genome.")
 @click.option('-k', type=int, required=True, help="The value of k.")
 @click.option('-c', is_flag=True, default=None,
-              help="Set if the input VCF is compressed")
+              help="Set if the input VCF is compressed.")
 @click.option('-d', '--dialect', type=click.Choice(csv.list_dialects()),
               default='unix', show_default=True,
               help="Use this CSV dialect.")
@@ -130,5 +144,6 @@ def cli(**kwargs):
               kwargs.pop('vcf') if kwargs['vcf'] != '-' else stdin_fsock,
               kwargs.pop('reference'),
               kwargs.pop('k'),
+              kwargs.pop('region'),
               kwargs.pop('dialect'),
               kwargs.pop('c'))
