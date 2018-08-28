@@ -11,6 +11,7 @@
 """
 
 import sys
+import collections
 import csv
 
 import click
@@ -82,7 +83,7 @@ def ksnpcounts(snpbv, k):
 
 
 def write_csv(output, vcf_file, ref_file, k, region=None, dialect='unix',
-              compressed=None):
+              compressed=None, frequency=False):
     """Write CSV file.
 
     Args:
@@ -102,9 +103,13 @@ def write_csv(output, vcf_file, ref_file, k, region=None, dialect='unix',
         compressed : bool
             Whether input VCF is compressed or not. It is determined by file
             extension if it is not specified.
+        frequency : bool
+            If set, instead of reporting SNPs counts of each k-mer, it reports
+            the frequency of each counts.
     """
+    fieldnames = ['k', 'count', 'freq'] if frequency else ['k', 'count']
     csv_writer = csv.DictWriter(output,
-                                fieldnames=['k', 'count'],
+                                fieldnames=fieldnames,
                                 dialect=dialect,
                                 quoting=csv.QUOTE_NONE)
     csv_writer.writeheader()
@@ -116,8 +121,16 @@ def write_csv(output, vcf_file, ref_file, k, region=None, dialect='unix',
     if ref_file is None:
         ref_file = open(vcf_reader.metadata['reference'], 'r')
     bv = compute_snpbv(vcf_reader, reflen(ref_file, region))
+    freqs = collections.defaultdict(int)
     for count in ksnpcounts(bv, k):
-        csv_writer.writerow(dict(k=k, count=count))
+        if frequency:
+            freqs[count] += 1
+        else:
+            csv_writer.writerow(dict(k=k, count=count))
+    if not frequency:
+        return
+    for key, value in sorted(freqs.items()):
+        csv_writer.writerow(dict(k=k, count=key, freq=value))
 
 
 @click.command()
@@ -135,6 +148,8 @@ def write_csv(output, vcf_file, ref_file, k, region=None, dialect='unix',
 @click.option('-d', '--dialect', type=click.Choice(csv.list_dialects()),
               default='unix', show_default=True,
               help="Use this CSV dialect.")
+@click.option('-f', '--frequency', is_flag=True, default=False,
+              help="Report frequency instead of reporting count in each k-mer.")
 def cli(**kwargs):
     """Report the number of SNPs in all k-mers. Specify the k and the VCF file,
     it reports number of SNPS occurred in each k-mer.
@@ -146,4 +161,5 @@ def cli(**kwargs):
               kwargs.pop('k'),
               kwargs.pop('region'),
               kwargs.pop('dialect'),
-              kwargs.pop('c'))
+              kwargs.pop('c'),
+              kwargs.pop('frequency'))
