@@ -38,7 +38,7 @@ __email__ = 'ali.ghaffaari@mpi-inf.mpg.de'
 __license__ = 'MIT'
 
 # Release
-__version__ = '0.0.6'
+__version__ = '0.0.7'
 __status__ = DS_PREALPHA
 
 # Package data
