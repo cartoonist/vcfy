@@ -21,6 +21,10 @@ from . import model
               help="Write to this file instead of standard output.")
 @click.option('-m', '--mutation-rate', type=float, required=True,
               help="Base mutation rate.")
+@click.option('-i', '--indel-rate', type=float, default=0.0,
+              help="Fraction of indels.")
+@click.option('-e', '--indel-extension', type=float, default=0.0,
+              help="Probability an indel is extended.")
 @click.option('-r', '--region', type=str, default=None,
               help="Region ID (default=first region in the reference)")
 @click.option('-l', '--low', type=int, default=None,
@@ -40,4 +44,6 @@ def cli(**kwargs):
         vcf_out=kwargs.pop('output'),
         region_id=kwargs.pop('region'),
         mrate=kwargs.pop('mutation_rate'),
+        indrate=kwargs.pop('indel_rate'),
+        extrate=kwargs.pop('indel_extension'),
         **kwargs)
