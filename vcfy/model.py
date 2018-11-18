@@ -17,12 +17,12 @@ import vcf
 from . import util
 
 
-def rnd_sv(locus, seq):
-    """Get random structural variant for the given `locus` in the `seq`.
+def rnd_snp(locus, seq):
+    """Get random SNP for the given `locus` in the `seq`.
 
     Parameters:
         locus : int
-            The position in the sequence for which a random SV is generated.
+            The position in the sequence for which a random SNP is generated.
         seq : str
             The reference DNA sequence.
 
@@ -36,7 +36,31 @@ def rnd_sv(locus, seq):
     return ref, random.choice([b for b in util.BASES if b != ref])
 
 
-def simulate(region, mrate, low=None, high=None):
+def rnd_indel(locus, seq, insertion=False, length=1):
+    """Get insertion or deletion for the given `locus` in the `seq`.
+
+    Parameters:
+        locus : int
+            The position in the sequence for which an indel is generated.
+        seq : str
+            The reference DNA sequence.
+        insertion : bool
+            Generate and insertion if set; otherwise deletion.
+        length : int
+            Length of the indel.
+
+    Return:
+        A tuple indicating the REF and ALT alleles.
+    """
+    if insertion:
+        alt = ''.join(random.choice(util.BASES) for _ in range(length))
+        return util.VCF_MISSING_VALUE, [alt]
+    else:
+        alt = seq[locus-1:locus-1+length].upper()
+        return alt, util.VCF_MISSING_VALUE
+
+
+def simulate(region, mrate, indrate, extrate, low=None, high=None):
     """Simulate variants for the given region in the one-based range
     [low, high) using the probability model defined by mass function `pmf`.
 
@@ -46,6 +70,12 @@ def simulate(region, mrate, low=None, high=None):
             region ID and its sequence.
         mrate : float
             Base mutation rate.
+        indrate : float
+            Indel fraction rate. If a locus is decided to be a mutation site, it
+            would be indel with this probability.
+        extrate : float
+            Indel extension rate. If a locus is decided to be a indel site, it
+            would be extended with this probability.
         low : int, optional
             The lower bound of the range in which the variants are simulated. It
             is assumed to be 1, if not provided.
@@ -59,19 +89,38 @@ def simulate(region, mrate, low=None, high=None):
     low = 1 if low is None else max(1, low)
     high = len(region.seq) + 1 if high is None else min(high, len(region.seq)+1)
 
+    indel_len = 0
     for locus in arange(low, high):
-        if random.choice([True, False], p=[mrate, 1-mrate]):
-            try:
-                ref, alt = rnd_sv(locus, region.seq)
-            except RuntimeError as err:
-                util.warn(err)
-                continue
-            yield dict(POS=locus,
-                       ID=util.VCF_MISSING_VALUE,
-                       REF=ref,
-                       ALT=alt,
-                       QUAL=util.VCF_MISSING_VALUE,
-                       FILTER=util.VCF_MISSING_VALUE)
+        if indel_len != 0:
+            indel_len -= 1
+            continue
+        if util.toss(mrate):
+            if util.toss(indrate):  # indel
+                indel_len = 1
+                while (util.toss(extrate) and
+                       indel_len < util.max_indel_len(high - low)):  # extension
+                    indel_len += 1
+                insertion = util.toss()
+                ref, alt = rnd_indel(locus, region.seq, insertion, indel_len)
+                yield dict(POS=locus,
+                           ID=util.VCF_MISSING_VALUE,
+                           REF=ref,
+                           ALT=alt,
+                           QUAL=util.VCF_MISSING_VALUE,
+                           FILTER=util.VCF_MISSING_VALUE)
+                indel_len = 0 if insertion else indel_len - 1
+            else:  # substitution
+                try:
+                    ref, alt = rnd_snp(locus, region.seq)
+                except RuntimeError as err:
+                    util.warn(err)
+                    continue
+                yield dict(POS=locus,
+                           ID=util.VCF_MISSING_VALUE,
+                           REF=ref,
+                           ALT=alt,
+                           QUAL=util.VCF_MISSING_VALUE,
+                           FILTER=util.VCF_MISSING_VALUE)
 
 
 def generate_vcf(ref, vcf_out, region_id=None, **sim_params):
