@@ -18,6 +18,7 @@ import datetime
 import tempfile
 import pkg_resources as pkg_res
 
+from numpy import random
 from Bio import SeqIO
 
 from . import release
@@ -32,6 +33,33 @@ def warn(msg):
     """Print a warning message."""
     print("[{pkg}] WARNING: {msg}.".format(pkg=release.__title__, msg=msg),
           file=sys.stderr)
+
+
+def max_indel_len(length):
+    """Return maximum indel length based on the `length` of the region.
+
+    Parameters:
+        length : int
+            Region's length.
+
+    Return:
+        Maximum indel length which is a percentage of the total length of the
+        region (currently 0.001).
+    """
+    return max(1, int(length/1000))
+
+
+def toss(p=0.5):
+    """Return True with the given probability of `p`.
+
+    Parameters:
+        p : float
+            The given probability which should be less than or equal to 1.
+
+    Return:
+        True with the probability of p; otherwise False.
+    """
+    return random.choice([True, False], p=[p, 1-p])
 
 
 def make_template(ref, region, **params):
