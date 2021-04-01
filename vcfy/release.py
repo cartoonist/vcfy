@@ -38,7 +38,7 @@ __email__ = 'ali.ghaffaari@mpi-inf.mpg.de'
 __license__ = 'MIT'
 
 # Release
-__version__ = '0.0.8'
+__version__ = '0.0.9'
 __status__ = DS_PREALPHA
 
 # Package data
@@ -57,11 +57,11 @@ __classifiers__ = [
     'License :: OSI Approved :: MIT License',
 
     # Supported Python versions.
-    'Programming Language :: Python :: 2',
-    'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.5',
     'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
 
     # Intended Audience and Topic
     'Intended Audience :: Science/Research',
