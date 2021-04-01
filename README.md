@@ -9,9 +9,10 @@ Tools
     Usage: vcfy [OPTIONS] REFERENCE
     
       Generate VCF file with simulated variants in specified range [low, high)
-      for the given region of the reference genome. In case that the region is
-      not specified the first region is used. If no range is provided, it is
-      assumed that the variants are scattered throughout the region.
+      for the given region of the reference genome (in FASTA format). In case
+      that the region is not specified the first region is used. If no range is
+      provided, it is assumed that the variants are scattered throughout the
+      region.
     
       For more information, consult with the README file.
     
